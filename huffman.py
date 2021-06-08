@@ -5,6 +5,7 @@
 
 from heapq import *
 import io
+import os
 
 ###  distribution de proba sur les letrres
 
@@ -107,21 +108,50 @@ def encodage(dico,fichier):
     code = ''.join(codeArray)
     octets = []
 
+    #on regroupe par paquet d'octets
     for i in range(0, len(code), 8):
         octets.append(int(code[i:i+8], 2))
-
 
     f2.write(bytearray(octets))
     f2.close()
     f.close()
+
+    orignal_size = os.path.getsize(fichier)
+    compress_size = os.path.getsize("leHorlaEncoded.txt")
+
+    print("Taux de compression : ", format((100*(orignal_size-compress_size))/orignal_size,'.2f'), "%")
+    return code
 
 
 
 ###  Ex.4  décodage d'un fichier compresse
 
 def decodage(arbre,fichierCompresse) :
-    # à compléter
-    print()
+    f = open(fichierCompresse, 'rb')
+
+    byte = f.read(1)
+    text = ''
+    while byte:
+        #print(format(bin(byte), '0b'))
+        symbole = bin(int.from_bytes(byte, 'big'))
+        symbole = str(symbole)
+        symbole = symbole[2::]
+
+        while len(symbole) < 8:
+            symbole = "0"+symbole
+
+
+        #print(symbole)
+        text = text + symbole
+        byte = f.read(1)
+    print(text)
+        #bin(int.from_bytes(a, 'big'))[2::]
+
+
+    f.close()
+
+
+
 
 F = frequences()
 print(F)
@@ -134,5 +164,7 @@ print(dico)
 
 encode = encodage(dico, 'leHorla.txt')
 print(encode)
-#decode = decodage(H,'leHorlaEncoded.txt')
-#print(decode)
+
+
+decode = decodage(dico,'leHorlaEncoded.txt')
+print(decode)
