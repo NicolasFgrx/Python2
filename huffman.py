@@ -4,6 +4,7 @@
 ####################################################
 
 from heapq import *
+import io
 
 ###  distribution de proba sur les letrres
 
@@ -87,9 +88,34 @@ def code_huffman(arbre):
 ###  Ex.3  encodage d'un texte contenu dans un fichier
 
 def encodage(dico,fichier):
-    f = open(fichier, 'r')
-    texte = f.readlines()
+    f = io.open(fichier, 'r', encoding="utf-8")
+    f2 = io.open("leHorlaEncoded.txt", 'wb')
+    ligne = f.readline() # premiere ligne
+    codeArray = []
+    while ligne:
+        code = ''
+
+        #parcour les caractères jusqu'a coder toute une ligne :
+        for carac in ligne:
+            #chercher le code
+            code = code + dico.get(carac, dico[' '])
+
+        codeArray.append(code)
+        ligne = f.readline()# passe a la ligne suivante
+
+    # code devient une chaine de caractères
+    code = ''.join(codeArray)
+    octets = []
+
+    for i in range(0, len(code), 8):
+        octets.append(int(code[i:i+8], 2))
+
+
+    f2.write(bytearray(octets))
+    f2.close()
     f.close()
+
+
 
 ###  Ex.4  décodage d'un fichier compresse
 
