@@ -20,6 +20,27 @@ proba = [
     0.0083, 0.0061, 0.0591, 0.0023, 0.0001, 0.0465, 0.0245,
     0.0623, 0.0459, 0.0256, 0.0081, 0.0555, 0.0697, 0.0572,
     0.0506, 0.0100, 0.0000, 0.0031, 0.0021, 0.0008  ]
+### True chars
+# def collecte_chars(fichier):
+#     chars = []
+#     proba = []
+#     f = io.open(fichier, 'r', encoding="utf-8")
+#     line = f.readline()
+#     while line:
+#         print(line)
+#         for i in line:
+#             if i in chars:
+#                 proba[] += 1
+#             else:
+#                 chars.append()
+#     longueur = len(lines)
+#     for couple in chars:
+#         couple[1] = couple[1] / longueur
+#     verif = 0
+#     for i in chars:
+#         verif += i[1]
+#     print(verif)
+#     return chars
 
 tas = []
 heapify(tas)
@@ -58,7 +79,7 @@ def arbre_huffman(frequences) :
     #print(tas)
 
     # creation d'un arbre unique
-    while len(tas) >= 2:
+    while len(tas) > 1:
         item1 = heappop(tas)
         item2 = heappop(tas)
         item3 = (item1[0]+item2[0], item1[1]+item2[1], Arbre(item1[1]+item2[1], item1[2], item2[2]))
@@ -88,7 +109,7 @@ def code_huffman(arbre):
 
 ###  Ex.3  encodage d'un texte contenu dans un fichier
 
-def encodage(dico,fichier):
+def encodage(dico, fichier):
     f = io.open(fichier, 'r', encoding="utf-8")
     f2 = io.open("leHorlaEncoded.txt", 'wb')
     ligne = f.readline() # premiere ligne
@@ -106,10 +127,12 @@ def encodage(dico,fichier):
 
     # code devient une chaine de caractères
     code = ''.join(codeArray)
+    #print(code)
     octets = []
 
     #on regroupe par paquet d'octets
     for i in range(0, len(code), 8):
+        temp = int(code[i:i+8], 2)
         octets.append(int(code[i:i+8], 2))
 
     f2.write(bytearray(octets))
@@ -130,7 +153,7 @@ def decodage(arbre,fichierCompresse) :
     f = open(fichierCompresse, 'rb')
 
     byte = f.read(1)
-    text = ''
+    tampon = ""
     while byte:
         #print(format(bin(byte), '0b'))
         symbole = bin(int.from_bytes(byte, 'big'))
@@ -140,18 +163,45 @@ def decodage(arbre,fichierCompresse) :
         while len(symbole) < 8:
             symbole = "0"+symbole
 
-
         #print(symbole)
-        text = text + symbole
+        tampon = tampon + symbole
         byte = f.read(1)
-    print(text)
         #bin(int.from_bytes(a, 'big'))[2::]
-
-
     f.close()
+    print(tampon)
+    print(len(tampon))
+    texte = ""
+    i = 0
+    while i < len(tampon):
+        cursor = arbre
+        while not cursor.estFeuille():
+            if tampon[i] == '0':
+                cursor = cursor.gauche
+            if tampon[i] == '1':
+                cursor = cursor.droit
+            i += 1
+            if i >= len(tampon):
+                break
+            if cursor.estFeuille():
+                texte = texte + cursor.lettre
+
+    return texte
 
 
 
+
+
+
+
+def display(arbre):
+    if arbre.estFeuille():
+        print(arbre.lettre)
+    if arbre.gauche != None:
+        display(arbre.gauche)
+    if arbre.droit != None:
+        display(arbre.droit)
+
+#test = collecte_chars('leHorla.txt')
 
 F = frequences()
 print(F)
@@ -163,8 +213,16 @@ dico = code_huffman(arbre)
 print(dico)
 
 encode = encodage(dico, 'leHorla.txt')
+print("Encode :")
 print(encode)
+print(len(encode))
 
 
-decode = decodage(dico,'leHorlaEncoded.txt')
+decode = decodage(arbre,'leHorlaEncoded.txt')
+print("Decode :")
 print(decode)
+print(len(decode))
+
+
+
+
