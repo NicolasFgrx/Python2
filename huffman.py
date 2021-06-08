@@ -19,28 +19,23 @@ proba = [
     0.1835, 0.0640, 0.0064, 0.0259, 0.0260, 0.1486, 0.0078,
     0.0083, 0.0061, 0.0591, 0.0023, 0.0001, 0.0465, 0.0245,
     0.0623, 0.0459, 0.0256, 0.0081, 0.0555, 0.0697, 0.0572,
-    0.0506, 0.0100, 0.0000, 0.0031, 0.0021, 0.0008  ]
+    0.0506, 0.0100, 0.0000, 0.0031, 0.0021, 0.0008 ]
 ### True chars
-# def collecte_chars(fichier):
-#     chars = []
-#     proba = []
-#     f = io.open(fichier, 'r', encoding="utf-8")
-#     line = f.readline()
-#     while line:
-#         print(line)
-#         for i in line:
-#             if i in chars:
-#                 proba[] += 1
-#             else:
-#                 chars.append()
-#     longueur = len(lines)
-#     for couple in chars:
-#         couple[1] = couple[1] / longueur
-#     verif = 0
-#     for i in chars:
-#         verif += i[1]
-#     print(verif)
-#     return chars
+def collecte_chars(fichier):
+    chars = {}
+    f = io.open(fichier, 'r', encoding="utf-8")
+    line = f.readline()
+    print(line)
+    while line:
+        for carac in line:
+            if chars.get(carac):
+                chars[carac] = chars[carac] + 1
+            else:
+                chars[carac] = 1
+        line = f.readline()
+    # print(chars)
+    chars['EOF'] = 1
+    return chars
 
 tas = []
 heapify(tas)
@@ -129,15 +124,26 @@ def encodage(dico, fichier):
     code = ''.join(codeArray)
     #print(code)
     octets = []
+    print("code :", code)
+    print(len(code)%8)
+
+    code = code + dico.get('EOF')
+
+    # Bourrage  : ajout d'un espace pour retomber sur un multible de 8
+    while len(code)%8 != 0:
+        code += "0"
 
     #on regroupe par paquet d'octets
     for i in range(0, len(code), 8):
-        temp = int(code[i:i+8], 2)
         octets.append(int(code[i:i+8], 2))
 
+
+    print(bin(octets[-1]))
     f2.write(bytearray(octets))
     f2.close()
     f.close()
+
+    print(octets)
 
     orignal_size = os.path.getsize(fichier)
     compress_size = os.path.getsize("leHorlaEncoded.txt")
@@ -153,12 +159,14 @@ def decodage(arbre,fichierCompresse) :
     f = open(fichierCompresse, 'rb')
 
     byte = f.read(1)
+
     tampon = ""
     while byte:
         #print(format(bin(byte), '0b'))
         symbole = bin(int.from_bytes(byte, 'big'))
         symbole = str(symbole)
         symbole = symbole[2::]
+
 
         while len(symbole) < 8:
             symbole = "0"+symbole
@@ -167,12 +175,16 @@ def decodage(arbre,fichierCompresse) :
         tampon = tampon + symbole
         byte = f.read(1)
         #bin(int.from_bytes(a, 'big'))[2::]
+
     f.close()
+
     print(tampon)
     print(len(tampon))
     texte = ""
     i = 0
-    while i < len(tampon):
+
+    cursor = arbre
+    while cursor.lettre != 'EOF':
         cursor = arbre
         while not cursor.estFeuille():
             if tampon[i] == '0':
@@ -180,17 +192,12 @@ def decodage(arbre,fichierCompresse) :
             if tampon[i] == '1':
                 cursor = cursor.droit
             i += 1
-            if i >= len(tampon):
-                break
             if cursor.estFeuille():
+                if cursor.lettre == 'EOF':
+                    return texte
                 texte = texte + cursor.lettre
 
-    return texte
-
-
-
-
-
+    # return texte
 
 
 def display(arbre):
@@ -203,22 +210,43 @@ def display(arbre):
 
 #test = collecte_chars('leHorla.txt')
 
-F = frequences()
-print(F)
+# F = frequences()
+# print(F)
+#
+# arbre = arbre_huffman(F)
+# print(arbre)
+#
+# dico = code_huffman(arbre)
+# print(dico)
+# encode = encodage(dico, 'leHorla.txt')
+# print("Encode :")
+# print(encode)
+# print(len(encode))
+#
+#
+# decode = decodage(arbre,'leHorlaEncoded.txt')
+# print("Decode :")
+# print(decode)
+# print(len(decode))
 
-arbre = arbre_huffman(F)
-print(arbre)
 
-dico = code_huffman(arbre)
-print(dico)
 
-encode = encodage(dico, 'leHorla.txt')
+#V2
+F2 = collecte_chars("leHorla.txt")
+print(F2)
+
+arbre2 = arbre_huffman(F2)
+print(arbre2)
+
+dico2 = code_huffman(arbre2)
+print(dico2)
+
+encode2 = encodage(dico2, 'leHorla.txt')
 print("Encode :")
-print(encode)
-print(len(encode))
+print(encode2)
+print(len(encode2))
 
-
-decode = decodage(arbre,'leHorlaEncoded.txt')
+decode = decodage(arbre2,'leHorlaEncoded.txt')
 print("Decode :")
 print(decode)
 print(len(decode))
