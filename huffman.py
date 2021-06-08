@@ -49,21 +49,20 @@ class Arbre :
 ###  Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
 def arbre_huffman(frequences) :
     # création des feuilles
-    for etiq, freq in frequences.items():
-        feuille = (freq, etiq, Arbre(etiq))
+    for etiq, proba in frequences.items():
+        feuille = (proba, etiq, Arbre(etiq))
         heappush(tas, feuille)
+
+    #print(tas)
 
     # creation d'un arbre unique
     while len(tas) >= 2:
         item1 = heappop(tas)
         item2 = heappop(tas)
-        # print("item 1 : ", item1)
-        # print("item 2 : ", item2)
-        item3 = (item1[0]+item2[0], item1[1]+item2[1], Arbre(item1[1]+item2[1], item1, item2))
-        # print("item 3 : ", item3)
+        item3 = (item1[0]+item2[0], item1[1]+item2[1], Arbre(item1[1]+item2[1], item1[2], item2[2]))
         heappush(tas, item3)
     arbre = heappop(tas)
-    return arbre
+    return arbre[2]
 
 
 ###  Ex.2  construction du code d'Huffamn
@@ -71,24 +70,26 @@ def arbre_huffman(frequences) :
 def parcours(arbre,prefixe,code) :    
     # à compléter
     if arbre.estFeuille():
-            code[arbre.lettre] = prefixe
+        code[arbre.lettre] = prefixe
     if arbre.gauche != None:
         parcours(arbre.gauche, prefixe+"0", code)
     if arbre.droit != None:
         parcours(arbre.droit, prefixe+"1", code)
 
 
-def code_huffman(arbre) :
+def code_huffman(arbre):
     # on remplit le dictionnaire du code d'Huffman en parcourant l'arbre
     code = {}
     parcours(arbre,'',code)
     return code
 
+
 ###  Ex.3  encodage d'un texte contenu dans un fichier
 
-def encodage(dico,fichier) :
-    # à compléter
-    print()
+def encodage(dico,fichier):
+    f = open(fichier, 'r')
+    texte = f.readlines()
+    f.close()
 
 ###  Ex.4  décodage d'un fichier compresse
 
@@ -99,13 +100,13 @@ def decodage(arbre,fichierCompresse) :
 F = frequences()
 print(F)
 
-tas = arbre_huffman(F)
-print(tas)
+arbre = arbre_huffman(F)
+print(arbre)
 
-dictionnaire = code_huffman(tas)
-print(dictionnaire)
+dico = code_huffman(arbre)
+print(dico)
 
-#encode = encodage(dico, 'leHorla.txt')
-#print(encode)
+encode = encodage(dico, 'leHorla.txt')
+print(encode)
 #decode = decodage(H,'leHorlaEncoded.txt')
 #print(decode)
